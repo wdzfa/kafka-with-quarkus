@@ -1,81 +1,50 @@
 # kafka-with-quarkus
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Proyek ini adalah aplikasi Quarkus yang mengintegrasikan Kafka untuk mengonsumsi data pengguna dari 
+API eksternal (randomuser.me) dan menyimpannya ke database PostgreSQL.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+## Prasyarat
 
-## Running the application in dev mode
+Sebelum memulai, pastikan memiliki hal-hal berikut terinstal di sistem:
 
-You can run your application in dev mode that enables live coding using:
+1. Java Development Kit (JDK) 17 
+2. Apache Maven 3.8.6 
+3. PostgreSQL Server 
+4. Apache Kafka
 
-```shell script
-./mvnw quarkus:dev
-```
+## Langkah 1: Persiapan Database PostgreSQL
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+- Buat Database
+name : demo_api
+user : postgres
+password: 1234
 
-## Packaging and running the application
+- Buat Tabel 'users' menggunakan DDL yang telah disediakan pada project
 
-The application can be packaged using:
+## Jalankan ZooKeeper Server
 
-```shell script
-./mvnw package
-```
+Masuk pada command prompt pada directory kafka dan execute:
+.\bin\windows\zookeeper-server-start.bat .\config\zookeeper.properties
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+## Jalankan Kafka Server
+Masuk pada command prompt baru pada directory kafka dan execute:
+.\bin\windows\kafka-server-start.bat .\config\server.properties
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+### Membangun dan Menjalankan Aplikasi
 
-If you want to build an _über-jar_, execute the following command:
+Buka terminal dan jalankan : ./mvn quarkus:dev
 
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
-```
+### Publikasikan Data Pengguna
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+Setelah aplikasi berjalan, Anda dapat memicu UserProducer untuk mengambil data dari randomuser.me 
+dan mempublikasikannya ke topik Kafka random-user.
 
-## Creating a native executable
+curl http://localhost:8080/users/publish
 
-You can create a native executable using:
+Anda akan melihat output Users published to Kafka! di browser/terminal.
 
-```shell script
-./mvnw package -Dnative
-```
+Di terminal tempat Anda menjalankan quarkus:dev, Anda akan melihat log dari UserProducer yang menunjukkan bahwa pesan telah berhasil dipublikasikan ke Kafka, 
+dan log dari UserConsumer yang menunjukkan bahwa pengguna telah berhasil dimasukkan ke database.
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
-```
-
-You can then execute your native executable with: `./target/kafka-with-quarkus-1.0.0-SNAPSHOT-runner`
-
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
-
-## Related Guides
-
-- REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
-- REST Client ([guide](https://quarkus.io/guides/rest-client)): Call REST services
-- Camel SmallRye Reactive Messaging ([guide](https://camel.apache.org/camel-quarkus/latest/reference/extensions/smallrye-reactive-messaging.html)): Camel integration with SmallRye Reactive Messaging
-- SmallRye GraphQL ([guide](https://quarkus.io/guides/smallrye-graphql)): Create GraphQL Endpoints using the code-first approach from MicroProfile GraphQL
-
-## Provided Code
-
-### REST Client
-
-Invoke different services through REST with JSON
-
-[Related guide section...](https://quarkus.io/guides/rest-client)
-
-### REST
-
-Easily start your REST Web Services
-
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
-
-### SmallRye GraphQL
-
-Start coding with this Hello GraphQL Query
-
-[Related guide section...](https://quarkus.io/guides/smallrye-graphql)
+### Verifikasi Data di Database
+Anda dapat memverifikasi bahwa data telah disimpan di database PostgreSQL.
